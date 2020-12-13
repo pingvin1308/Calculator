@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace HuntTheWumpus.CLI
 {
@@ -23,63 +24,38 @@ namespace HuntTheWumpus.CLI
 
             Random random = new Random();
 
-            string player = "[@]";
+            List<GameObject> gameObjects = new List<GameObject>();
 
-            Coordinates playersCoordinates = new Coordinates(random.Next(0, 5), random.Next(0, 5));
-            //(int, int)(x, y) = Method();
+            Player player = new Player();
+            player.Coordinates = Generator(gameObjects);
+            gameObjects.Add(player);
 
-            string wumpus = "[X]";
+            Wumpus wumpus = new Wumpus();
+            wumpus.Coordinates = Generator(gameObjects);
+            gameObjects.Add(wumpus);
 
-            Coordinates wumpusCoordinates = new Coordinates(0, 0);
-            do
-            {
-                wumpusCoordinates.X = random.Next(0, 5);
-                wumpusCoordinates.Y = random.Next(0, 5);
-            } while (wumpusCoordinates.CompareTo(playersCoordinates));
+            Pit pit = new Pit();
+            pit.Coordinates = Generator(gameObjects);
+            gameObjects.Add(pit);
 
-            //(int, int)(x1, y1) = Method(x, y);
+            Pit pit2 = new Pit();
+            pit2.Coordinates = Generator(gameObjects);
+            gameObjects.Add(pit2);
 
-            string pit = "[O]";
-            Coordinates pitCoordinates = new Coordinates(0, 0);
-            do
-            {
-                pitCoordinates.X = random.Next(0, 5);
-                pitCoordinates.Y = random.Next(0, 5);
-            } while (pitCoordinates.CompareTo(wumpusCoordinates) || pitCoordinates.CompareTo(playersCoordinates));
+            Bat bat = new Bat();
+            bat.Coordinates = Generator(gameObjects);
+            gameObjects.Add(bat);
 
-            //(int, int)(x2, y2) = Method(x, y, x1, y1);
+            Bat bat2 = new Bat();
+            bat2.Coordinates = Generator(gameObjects);
+            gameObjects.Add(bat2);
 
-            string pit2 = "[O]";
-            Coordinates pit2Coordinates = new Coordinates(0, 0);
-            do
-            {
-                pit2Coordinates.X = random.Next(0, 5);
-                pit2Coordinates.Y = random.Next(0, 5);
-            } while (pit2Coordinates.CompareTo(wumpusCoordinates) || pit2Coordinates.CompareTo(playersCoordinates) || pit2Coordinates.CompareTo(pitCoordinates));
-
-            string bat = "[M]";
-            Coordinates batCoordinates = new Coordinates(0, 0);
-            do
-            {
-                batCoordinates.X = random.Next(0, 5);
-                batCoordinates.Y = random.Next(0, 5);
-            } while (batCoordinates.CompareTo(wumpusCoordinates) || batCoordinates.CompareTo(playersCoordinates) || batCoordinates.CompareTo(pitCoordinates) || batCoordinates.CompareTo(pit2Coordinates));
-
-            string bat2 = "[M]";
-            Coordinates bat2Coordinates = new Coordinates(0, 0);
-            do
-            {
-                bat2Coordinates.X = random.Next(0, 5);
-                bat2Coordinates.Y = random.Next(0, 5);
-            } while (bat2Coordinates.CompareTo(wumpusCoordinates) || bat2Coordinates.CompareTo(playersCoordinates) || bat2Coordinates.CompareTo(pitCoordinates) || bat2Coordinates.CompareTo(pit2Coordinates) || bat2Coordinates.CompareTo(batCoordinates));
-
-
-            map[playersCoordinates.Y, playersCoordinates.X] = player;
-            map[wumpusCoordinates.Y, wumpusCoordinates.X] = wumpus;
-            map[pitCoordinates.Y, pitCoordinates.X] = pit;
-            map[pit2Coordinates.Y, pit2Coordinates.X] = pit2;
-            map[batCoordinates.Y, batCoordinates.X] = bat;
-            map[bat2Coordinates.Y, bat2Coordinates.X] = bat2;
+            map[player.Coordinates.Y, player.Coordinates.X] = player.Render();
+            map[wumpus.Coordinates.Y, wumpus.Coordinates.X] = wumpus.Render();
+            map[pit.Coordinates.Y, pit.Coordinates.X] = pit.Render();
+            map[pit2.Coordinates.Y, pit2.Coordinates.X] = pit2.Render();
+            map[bat.Coordinates.Y, bat.Coordinates.X] = bat.Render();
+            map[bat2.Coordinates.Y, bat2.Coordinates.X] = bat2.Render();
 
             bool isPlayerAlife = true;
 
@@ -90,32 +66,32 @@ namespace HuntTheWumpus.CLI
 
                 ConsoleKeyInfo keyInfo = Console.ReadKey(false);
 
-                if (keyInfo.Key == ConsoleKey.UpArrow && playersCoordinates.Y > 0)
+                if (keyInfo.Key == ConsoleKey.UpArrow && player.Coordinates.Y > 0)
                 {
-                    map[playersCoordinates.Y, playersCoordinates.X] = room;
-                    map[playersCoordinates.Y - 1, playersCoordinates.X] = player;
-                    playersCoordinates.Y--;
+                    map[player.Coordinates.Y, player.Coordinates.X] = room;
+                    map[player.Coordinates.Y - 1, player.Coordinates.X] = player.Render();
+                    player.Coordinates.Y--;
                 }
 
-                if (keyInfo.Key == ConsoleKey.DownArrow && playersCoordinates.Y < (rowNumber - 1))
+                if (keyInfo.Key == ConsoleKey.DownArrow && player.Coordinates.Y < (rowNumber - 1))
                 {
-                    map[playersCoordinates.Y, playersCoordinates.X] = room;
-                    map[playersCoordinates.Y + 1, playersCoordinates.X] = player;
-                    playersCoordinates.Y++;
+                    map[player.Coordinates.Y, player.Coordinates.X] = room;
+                    map[player.Coordinates.Y + 1, player.Coordinates.X] = player.Render();
+                    player.Coordinates.Y++;
                 }
 
-                if (keyInfo.Key == ConsoleKey.LeftArrow && playersCoordinates.X > 0)
+                if (keyInfo.Key == ConsoleKey.LeftArrow && player.Coordinates.X > 0)
                 {
-                    map[playersCoordinates.Y, playersCoordinates.X] = room;
-                    map[playersCoordinates.Y, playersCoordinates.X - 1] = player;
-                    playersCoordinates.X--;
+                    map[player.Coordinates.Y, player.Coordinates.X] = room;
+                    map[player.Coordinates.Y, player.Coordinates.X - 1] = player.Render();
+                    player.Coordinates.X--;
                 }
 
-                if (keyInfo.Key == ConsoleKey.RightArrow && playersCoordinates.X < (columnNumber - 1))
+                if (keyInfo.Key == ConsoleKey.RightArrow && player.Coordinates.X < (columnNumber - 1))
                 {
-                    map[playersCoordinates.Y, playersCoordinates.X] = room;
-                    map[playersCoordinates.Y, playersCoordinates.X + 1] = player;
-                    playersCoordinates.X++;
+                    map[player.Coordinates.Y, player.Coordinates.X] = room;
+                    map[player.Coordinates.Y, player.Coordinates.X + 1] = player.Render();
+                    player.Coordinates.X++;
                 }
 
                 if (keyInfo.Key == ConsoleKey.D)
@@ -139,6 +115,33 @@ namespace HuntTheWumpus.CLI
                 Console.WriteLine();
             }
         }
+
+        private static Coordinates Generator(List<GameObject> gameObjects)
+        {
+            Random random = new Random();
+            Coordinates cords = new Coordinates(0, 0);
+            bool isContinue = false;
+
+            do
+            {
+                cords.X = random.Next(0, 5);
+                cords.Y = random.Next(0, 5);
+
+                foreach (GameObject gameObject in gameObjects)
+                {
+                    isContinue = false;
+
+                    if (gameObject.Coordinates.CompareTo(cords))
+                    {
+                        isContinue = true;
+                        break;
+                    }
+                }
+
+            } while (isContinue);
+
+            return cords;
+        }
     }
 
     public class Coordinates
@@ -155,6 +158,48 @@ namespace HuntTheWumpus.CLI
         public bool CompareTo(Coordinates b)
         {
             return X == b.X && Y == b.Y;
+        }
+    }
+
+    public class GameObject
+    {
+        public Coordinates Coordinates { get; set; }
+
+        public virtual string Render()
+        {
+            return " ";
+        }
+    }
+
+    public class Player : GameObject
+    {
+        public override string Render()
+        {
+            return "[@]";
+        }
+    }
+
+    public class Wumpus : GameObject
+    {
+        public override string Render()
+        {
+            return "[X]";
+        }
+    }
+
+    public class Pit : GameObject
+    {
+        public override string Render()
+        {
+            return "[O]";
+        }
+    }
+
+    public class Bat : GameObject
+    {
+        public override string Render()
+        {
+            return "[M]";
         }
     }
 }
