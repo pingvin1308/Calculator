@@ -8,6 +8,11 @@ namespace HuntTheWumpus.CLI
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Welcome to HuntTheWumpus");
+            Console.WriteLine();
+            Console.WriteLine("Choose difficulty: \"e\" for easy, \"n\" for normal,\"h\" for hard");
+            ConsoleKeyInfo difficulty = Console.ReadKey(false);
+
             string room = "[ ]";
 
             const int rowNumber = 10;
@@ -25,7 +30,7 @@ namespace HuntTheWumpus.CLI
 
             Random random = new Random();
 
-            List<GameObject> gameObjects = InitializationGameObjects(rowNumber, columnNumber);
+            List<GameObject> gameObjects = InitializationGameObjects(rowNumber, columnNumber, difficulty);
             Player player = (Player)gameObjects.First(x => x is Player);
             Wumpus wumpus = (Wumpus)gameObjects.First(x => x is Wumpus);
 
@@ -35,6 +40,8 @@ namespace HuntTheWumpus.CLI
                 PrintMap(rowNumber, columnNumber, map, gameObjects);
 
                 Console.WriteLine();
+
+                player.Weapon.ShowEquipement();
 
                 CheckNearPlayer(rowNumber, columnNumber, player, gameObjects);
 
@@ -137,36 +144,51 @@ namespace HuntTheWumpus.CLI
             return cords;
         }
 
-        private static List<GameObject> InitializationGameObjects(int rowNumber, int columnNumber)
+        private static List<GameObject> InitializationGameObjects(int rowNumber, int columnNumber, ConsoleKeyInfo difficulty)
         {
             List<GameObject> gameObjects = new List<GameObject>();
             Player player = new Player();
             player.Coordinates = Generator(gameObjects, rowNumber, columnNumber);
             gameObjects.Add(player);
 
-            Bat bat = new Bat();
-            bat.Coordinates = Generator(gameObjects, rowNumber, columnNumber);
-            gameObjects.Add(bat);
+            int batCount = 0;
+            int pitCount = 0;
 
-            Bat bat2 = new Bat();
-            bat2.Coordinates = Generator(gameObjects, rowNumber, columnNumber);
-            gameObjects.Add(bat2);
+            if (difficulty.Key == ConsoleKey.E)
+            {
+               batCount = 5;
+               pitCount = 5;
+            }
 
-            Bat bat3 = new Bat();
-            bat3.Coordinates = Generator(gameObjects, rowNumber, columnNumber);
-            gameObjects.Add(bat3);
+            if (difficulty.Key == ConsoleKey.N)
+            {
+                batCount = 10;
+                pitCount = 10;
+            }
+
+            if (difficulty.Key == ConsoleKey.H)
+            {
+                batCount = 15;
+                pitCount = 15;
+            }
+
+            for (int i = batCount; i > 0; i--)
+            {
+                Bat bat = new Bat();
+                bat.Coordinates = Generator(gameObjects, rowNumber, columnNumber);
+                gameObjects.Add(bat);
+            }
+
+            for (int i = pitCount; i > 0; i--)
+            {
+                Pit pit = new Pit();
+                pit.Coordinates = Generator(gameObjects, rowNumber, columnNumber);
+                gameObjects.Add(pit);
+            }
 
             Wumpus wumpus = new Wumpus();
             wumpus.Coordinates = Generator(gameObjects, rowNumber, columnNumber);
             gameObjects.Add(wumpus);
-
-            Pit pit = new Pit();
-            pit.Coordinates = Generator(gameObjects, rowNumber, columnNumber);
-            gameObjects.Add(pit);
-
-            Pit pit2 = new Pit();
-            pit2.Coordinates = Generator(gameObjects, rowNumber, columnNumber);
-            gameObjects.Add(pit2);
 
             return gameObjects;
         }
@@ -278,131 +300,25 @@ namespace HuntTheWumpus.CLI
 
             if (keyInfo.Key == ConsoleKey.Q)
             {
-                player.Weapon = WeaponType.Bow;
+                player.Weapon = new BowWeapon();
                 return true;
             }
 
             if (keyInfo.Key == ConsoleKey.R)
             {
-                player.Weapon = WeaponType.MorningStar;
+                player.Weapon = new MorningStarWeapon();
                 return true;
             }
 
-            if (player.Weapon == WeaponType.Sword)
+            if (keyInfo.Key == ConsoleKey.T)
             {
-                if (keyInfo.Key == ConsoleKey.W && player.Coordinates.Y > 0)
-                {
-                    if (wumpus.Coordinates.Y == player.Coordinates.Y - 1 && wumpus.Coordinates.X == player.Coordinates.X)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
-
-                if (keyInfo.Key == ConsoleKey.S && player.Coordinates.Y < (rowNumber - 1))
-                {
-                    if (wumpus.Coordinates.Y == player.Coordinates.Y + 1 && wumpus.Coordinates.X == player.Coordinates.X)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
-
-                if (keyInfo.Key == ConsoleKey.D && player.Coordinates.X < (columnNumber - 1))
-                {
-                    if (wumpus.Coordinates.X == player.Coordinates.X + 1 && wumpus.Coordinates.Y == player.Coordinates.Y)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
-
-                if (keyInfo.Key == ConsoleKey.A && player.Coordinates.X > 0)
-                {
-                    if (wumpus.Coordinates.X == player.Coordinates.X - 1 && wumpus.Coordinates.Y == player.Coordinates.Y)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
+                player.Weapon = new SwordWeapon();
+                return true;
             }
-            else if (player.Weapon == WeaponType.Bow)
+            if (player.Weapon.Attack(player, wumpus, rowNumber, columnNumber, keyInfo) == true)
             {
-                if (keyInfo.Key == ConsoleKey.W && player.Coordinates.Y > 0)
-                {
-                    if (wumpus.Coordinates.Y < player.Coordinates.Y && wumpus.Coordinates.X == player.Coordinates.X)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
-
-                if (keyInfo.Key == ConsoleKey.S && player.Coordinates.Y < (rowNumber - 1))
-                {
-                    if (wumpus.Coordinates.Y > player.Coordinates.Y && wumpus.Coordinates.X == player.Coordinates.X)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
-
-                if (keyInfo.Key == ConsoleKey.D && player.Coordinates.X < (columnNumber - 1))
-                {
-                    if (wumpus.Coordinates.X > player.Coordinates.X && wumpus.Coordinates.Y == player.Coordinates.Y)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
-
-                if (keyInfo.Key == ConsoleKey.A && player.Coordinates.X > 0)
-                {
-                    if (wumpus.Coordinates.X < player.Coordinates.X && wumpus.Coordinates.Y == player.Coordinates.Y)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
+                return true;
             }
-            else if (player.Weapon == WeaponType.MorningStar)
-            {
-                if (keyInfo.Key == ConsoleKey.W && player.Coordinates.Y > 0)
-                {
-                    if (wumpus.Coordinates.Y == player.Coordinates.Y - 2 && wumpus.Coordinates.X == player.Coordinates.X)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
-
-                if (keyInfo.Key == ConsoleKey.S && player.Coordinates.Y < (rowNumber - 1))
-                {
-                    if (wumpus.Coordinates.Y == player.Coordinates.Y + 2 && wumpus.Coordinates.X == player.Coordinates.X)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
-
-                if (keyInfo.Key == ConsoleKey.D && player.Coordinates.X < (columnNumber - 1))
-                {
-                    if (wumpus.Coordinates.X == player.Coordinates.X + 2 && wumpus.Coordinates.Y == player.Coordinates.Y)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
-
-                if (keyInfo.Key == ConsoleKey.A && player.Coordinates.X > 0)
-                {
-                    if (wumpus.Coordinates.X == player.Coordinates.X - 2 && wumpus.Coordinates.Y == player.Coordinates.Y)
-                    {
-                        wumpus.IsAlife = false;
-                    }
-                    return true;
-                }
-            }
-
 
             if (keyInfo.Key == ConsoleKey.UpArrow && player.Coordinates.Y > 0)
             {
@@ -472,10 +388,11 @@ namespace HuntTheWumpus.CLI
         public Player()
         {
             IsAlife = true;
+            Weapon = new SwordWeapon();
         }
 
+        public IWeapon Weapon { get; set; }
         public bool IsAlife { get; set; }
-        public WeaponType Weapon { get; set; }
 
         public override string Render()
         {
@@ -523,4 +440,182 @@ namespace HuntTheWumpus.CLI
         Bow = 1,
         MorningStar = 2
     }
+
+    public interface IWeapon
+    {
+        bool Attack(Player player, Wumpus wumpus, int rowNumber, int columnNumber, ConsoleKeyInfo keyInfo);
+        void ShowEquipement();
+    }
+
+    public class SwordWeapon : IWeapon
+    {
+        public bool Attack(Player player, Wumpus wumpus, int rowNumber, int columnNumber, ConsoleKeyInfo keyInfo)
+        {
+            if (keyInfo.Key == ConsoleKey.W && player.Coordinates.Y > 0)
+            {
+                if (wumpus.Coordinates.Y == player.Coordinates.Y - 1 && wumpus.Coordinates.X == player.Coordinates.X)
+                {
+                    wumpus.IsAlife = false;
+                }
+                return true;
+            }
+
+            if (keyInfo.Key == ConsoleKey.S && player.Coordinates.Y < (rowNumber - 1))
+            {
+                if (wumpus.Coordinates.Y == player.Coordinates.Y + 1 && wumpus.Coordinates.X == player.Coordinates.X)
+                {
+                    wumpus.IsAlife = false;
+                }
+                return true;
+            }
+
+            if (keyInfo.Key == ConsoleKey.D && player.Coordinates.X < (columnNumber - 1))
+            {
+                if (wumpus.Coordinates.X == player.Coordinates.X + 1 && wumpus.Coordinates.Y == player.Coordinates.Y)
+                {
+                    wumpus.IsAlife = false;
+                }
+                return true;
+            }
+
+            if (keyInfo.Key == ConsoleKey.A && player.Coordinates.X > 0)
+            {
+                if (wumpus.Coordinates.X == player.Coordinates.X - 1 && wumpus.Coordinates.Y == player.Coordinates.Y)
+                {
+                    wumpus.IsAlife = false;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public void ShowEquipement()
+        {
+            Console.WriteLine("You equiped sword");
+        }
+    }
+    public class BowWeapon : IWeapon
+    {
+        public BowWeapon()
+        {
+            ArrowsCount = 3;
+        }
+        public int ArrowsCount { get; private set; }
+        public bool Attack(Player player, Wumpus wumpus, int rowNumber, int columnNumber, ConsoleKeyInfo keyInfo)
+        {
+            if (keyInfo.Key == ConsoleKey.W && player.Coordinates.Y > 0 && ArrowsCount > 0)
+            {
+                if (wumpus.Coordinates.Y < player.Coordinates.Y && wumpus.Coordinates.X == player.Coordinates.X)
+                {
+                    wumpus.IsAlife = false;
+                }
+                ArrowsCount = ArrowsCount - 1;
+                return true;
+            }
+
+            if (keyInfo.Key == ConsoleKey.S && player.Coordinates.Y < (rowNumber - 1) && ArrowsCount > 0)
+            {
+                if (wumpus.Coordinates.Y > player.Coordinates.Y && wumpus.Coordinates.X == player.Coordinates.X)
+                {
+                    wumpus.IsAlife = false;
+                }
+                ArrowsCount = ArrowsCount - 1;
+                return true;
+            }
+
+            if (keyInfo.Key == ConsoleKey.D && player.Coordinates.X < (columnNumber - 1) && ArrowsCount > 0)
+            {
+                if (wumpus.Coordinates.X > player.Coordinates.X && wumpus.Coordinates.Y == player.Coordinates.Y)
+                {
+                    wumpus.IsAlife = false;
+                }
+                ArrowsCount = ArrowsCount - 1;
+                return true;
+            }
+
+            if (keyInfo.Key == ConsoleKey.A && player.Coordinates.X > 0 && ArrowsCount > 0)
+            {
+                if (wumpus.Coordinates.X < player.Coordinates.X && wumpus.Coordinates.Y == player.Coordinates.Y)
+                {
+                    wumpus.IsAlife = false;
+                }
+                ArrowsCount = ArrowsCount - 1;
+                return true;
+            }
+            return false;
+        }
+
+        public void ShowEquipement()
+        {
+            Console.WriteLine("You equiped bow");
+            Console.WriteLine("Arrows left:" + ArrowsCount);
+            if (ArrowsCount == 0)
+            {
+                Console.WriteLine("You run out of arrows");
+            }
+        }
+    }
+    public class MorningStarWeapon : IWeapon
+    {
+        public MorningStarWeapon()
+        {
+            UsesLeft = 2;
+        }
+
+        public int UsesLeft { get; private set; }
+        public bool Attack(Player player, Wumpus wumpus, int rowNumber, int columnNumber, ConsoleKeyInfo keyInfo)
+        {
+            if (keyInfo.Key == ConsoleKey.W && player.Coordinates.Y > 0 && UsesLeft > 0)
+            {
+                if (wumpus.Coordinates.Y == player.Coordinates.Y - 2 && wumpus.Coordinates.X == player.Coordinates.X)
+                {
+                    wumpus.IsAlife = false;
+                }
+                UsesLeft = UsesLeft - 1;
+                return true;
+            }
+
+            if (keyInfo.Key == ConsoleKey.S && player.Coordinates.Y < (rowNumber - 1) && UsesLeft > 0)
+            {
+                if (wumpus.Coordinates.Y == player.Coordinates.Y + 2 && wumpus.Coordinates.X == player.Coordinates.X)
+                {
+                    wumpus.IsAlife = false;
+                }
+                UsesLeft = UsesLeft - 1;
+                return true;
+            }
+
+            if (keyInfo.Key == ConsoleKey.D && player.Coordinates.X < (columnNumber - 1) && UsesLeft > 0)
+            {
+                if (wumpus.Coordinates.X == player.Coordinates.X + 2 && wumpus.Coordinates.Y == player.Coordinates.Y)
+                {
+                    wumpus.IsAlife = false;
+                }
+                UsesLeft = UsesLeft - 1;
+                return true;
+            }
+
+            if (keyInfo.Key == ConsoleKey.A && player.Coordinates.X > 0 && UsesLeft > 0)
+            {
+                if (wumpus.Coordinates.X == player.Coordinates.X - 2 && wumpus.Coordinates.Y == player.Coordinates.Y)
+                {
+                    wumpus.IsAlife = false;
+                }
+                UsesLeft = UsesLeft - 1;
+                return true;
+            }
+            return false;
+        }
+
+        public void ShowEquipement()
+        {
+            Console.WriteLine("You equiped MorningStar");
+            Console.WriteLine("Uses left:" + UsesLeft);
+            if (UsesLeft == 0)
+            {
+                Console.WriteLine("The MorningStar is broken");
+            }
+        }
+    }
+
 }
